@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signature Scent Discovery Quiz</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, sans-serif; color: #222; background: #fff; }
+  #app { max-width: 560px; margin: 0 auto; padding: 24px 16px; min-height: 100dvh; }
+
+  /* Progress */
+  .progress-text { font-size: 13px; color: #888; margin-bottom: 8px; }
+  .progress-bar { height: 4px; background: #eee; border-radius: 2px; margin-bottom: 28px; overflow: hidden; }
+  .progress-fill { height: 100%; background: #333; transition: width 0.3s; }
+
+  /* Typography */
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: #666; margin-bottom: 24px; }
+  .question-text { font-size: 17px; font-weight: 500; line-height: 1.4; margin-bottom: 20px; }
+
+  /* Inputs */
+  .name-label { font-size: 14px; font-weight: 500; display: block; margin-bottom: 6px; }
+  .name-input {
+    width: 100%; padding: 10px 12px; font-size: 15px;
+    border: 1px solid #ccc; border-radius: 8px; font-family: inherit;
+  }
+  .name-input:focus { outline: none; border-color: #333; }
+
+  /* Option buttons */
+  .option-btn {
+    display: block; width: 100%; text-align: left; padding: 12px 16px; margin-bottom: 8px;
+    border: 1px solid #ccc; border-radius: 8px; cursor: pointer;
+    background: #fff; font-size: 15px; font-family: inherit; transition: all 0.15s;
+  }
+  .option-btn:hover { border-color: #999; }
+  .option-btn.selected { border: 2px solid #333; background: #f5f5f5; font-weight: 600; }
+
+  /* Navigation */
+  .nav { display: flex; justify-content: space-between; margin-top: 24px; }
+  .btn-primary {
+    padding: 10px 24px; border-radius: 8px; border: none; cursor: pointer;
+    background: #333; color: #fff; font-size: 14px; font-weight: 600; font-family: inherit;
+  }
+  .btn-primary:disabled { background: #ddd; color: #999; cursor: default; }
+  .btn-outline {
+    padding: 10px 24px; border-radius: 8px; border: 1px solid #ccc; cursor: pointer;
+    background: #fff; font-size: 14px; font-weight: 500; font-family: inherit;
+  }
+  .btn-outline:hover { border-color: #999; }
+  .answered-count { font-size: 12px; color: #aaa; align-self: center; }
+
+  /* Results */
+  .vibes-box {
+    background: #f9f9f9; border-radius: 8px; padding: 16px; margin-bottom: 28px; font-size: 13px;
+  }
+  .vibes-box strong { display: block; margin-bottom: 8px; }
+  .vibes-row { margin-bottom: 4px; }
+  .vibes-row .q { color: #888; }
+  .vibes-row .a { font-weight: 500; }
+
+  .axis-labels {
+    display: flex; justify-content: space-between; font-size: 11px; color: #999;
+    margin-bottom: 20px; padding-left: 142px; padding-right: 80px;
+  }
+  .cat-row { display: flex; align-items: center; margin-bottom: 16px; gap: 12px; }
+  .cat-label { width: 130px; font-size: 13px; font-weight: 500; flex-shrink: 0; text-align: right; }
+  .slider-track {
+    flex: 1; height: 6px; background: #eee; border-radius: 3px; position: relative;
+  }
+  .slider-center {
+    position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: #ddd;
+  }
+  .slider-dot {
+    position: absolute; top: 50%; transform: translate(-50%, -50%);
+    width: 14px; height: 14px; border-radius: 50%; background: #333;
+  }
+  .score-label { width: 80px; font-size: 12px; color: #666; flex-shrink: 0; }
+
+  /* Data tables */
+  details { margin-top: 24px; font-size: 13px; }
+  summary { cursor: pointer; font-weight: 500; margin-bottom: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { padding: 4px 8px; text-align: left; }
+  thead tr { border-bottom: 1px solid #ddd; }
+  tbody tr { border-bottom: 1px solid #eee; }
+  pre.json {
+    background: #f5f5f5; padding: 12px; border-radius: 8px;
+    overflow: auto; font-size: 11px; white-space: pre-wrap;
+  }
+
+  @media (max-width: 500px) {
+    .axis-labels { padding-left: 100px; padding-right: 60px; }
+    .cat-label { width: 90px; font-size: 12px; }
+    .score-label { width: 60px; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+
+// ─── DATA ───────────────────────────────────────────────────────────────────
+
+const VIBES_QUESTIONS = [
+  { id: "v1", text: "I\u2019m looking for a scent for\u2026", options: ["Daytime", "Nighttime", "Something that can do both", "Doesn\u2019t matter"] },
+  { id: "v2", text: "I want my scent to be\u2026", options: ["Feminine", "Masculine", "Unisex", "Doesn\u2019t matter"] },
+  { id: "v3", text: "I\u2019m looking for a fragrance that is\u2026", options: ["Classic", "On the cutting edge of trends", "Something no one else is wearing", "Just something I like"] },
+  { id: "v4", text: "I\u2019m looking for a fragrance that says I\u2019m\u2026", options: ["Fun and vibrant", "Mysterious and challenging", "Sexy and magnetic", "Elegant and sophisticated", "Soft and calm", "Cool and chic", "Authoritative and worldly", "I don\u2019t really care how other people perceive it"] },
+  { id: "v5", text: "I want my scent to be\u2026", options: ["Something people notice when I walk into a room", "Something subtle \u2014 a reward for intimacy", "Something elusive, yet lingers in the air when I walk by\u2026", "Don\u2019t care as long as I like it!"] },
+];
+
+const SCENT_OPTIONS = ["Love it", "Like it", "Neutral", "Dislike it", "Hate it"];
+const SCORE_VALUES = { "Love it": 2, "Like it": 1, "Neutral": 0, "Dislike it": -1, "Hate it": -2 };
+
+const SCENT_QUESTIONS = [
+  { id:"s1",  text:"Do you like the smell of freshly cut grass?", cat:{ green:1 } },
+  { id:"s2",  text:"Do you enjoy the smell of being outside right after it rains?", cat:{ green:0.7, aquatic:0.3 } },
+  { id:"s3",  text:"Do you like the smell of fresh herbs like basil or mint leaves?", cat:{ green:1 } },
+  { id:"s4",  text:"Do you enjoy the smell of freshly-cut green plant stems?", cat:{ green:1 } },
+  { id:"s5",  text:"Do you like the smell of sharp, fresh aromas like eucalyptus leaves or tea tree oil?", cat:{ green:0.6, aquatic:0.4 } },
+  { id:"s6",  text:"Do you enjoy the smell of fragrant white flowers like jasmine or gardenia?", cat:{ floral:1 } },
+  { id:"s7",  text:"Do you like the smell of roses?", cat:{ floral:1 } },
+  { id:"s8",  text:"Do you enjoy the soft, powdery smell of lipstick and makeup?", cat:{ floral:1 } },
+  { id:"s9",  text:"Do you like the smell of relaxing \u201cspa\u201d herbs such as lavender and rosemary?", cat:{ floral:1 } },
+  { id:"s10", text:"Do you enjoy the warm smell of flowering trees, such as orange blossom or magnolia?", cat:{ floral:1 } },
+  { id:"s11", text:"Do you enjoy the smell of sunscreen?", cat:{ floral:0.4, fruity:0.3, aquatic:0.3 } },
+  { id:"s12", text:"Do you like the smell of peeling a fresh orange or zesting a lemon?", cat:{ citrus:1 } },
+  { id:"s13", text:"Do you enjoy the smell of lemon-lime soda?", cat:{ citrus:1 } },
+  { id:"s14", text:"Do you enjoy the smell of fresh grapefruit, or a cocktail with grapefruit juice?", cat:{ citrus:1 } },
+  { id:"s15", text:"Do you like the smell of ripe peaches or nectarines?", cat:{ fruity:1 } },
+  { id:"s16", text:"Do you enjoy the smell of red berries, like strawberries or raspberries?", cat:{ fruity:1 } },
+  { id:"s17", text:"Do you like the smell of tropical fruits like pineapple, mango, or coconut?", cat:{ fruity:1 } },
+  { id:"s18", text:"Do you enjoy the scent of fruity drinks, like sangria or fruit punch?", cat:{ fruity:1 } },
+  { id:"s19", text:"Do you like the smell of trees and earth, or the smell of walking in a forest?", cat:{ green:0.6, woody:0.4 } },
+  { id:"s20", text:"Do you enjoy the smell of dry wood, like a sauna or chopped firewood?", cat:{ woody:1 } },
+  { id:"s21", text:"Do you like the smell of warm wood, like a wooden cabin or polished wood furniture?", cat:{ woody:1 } },
+  { id:"s22", text:"Do you enjoy the smell of a smoky fireplace or campfire?", cat:{ woody:0.5, leather_tobacco:0.5 } },
+  { id:"s23", text:"Do you like the smell of moss and/or damp earth after rain?", cat:{ green:1 } },
+  { id:"s24", text:"Do you enjoy the vanilla-y smell of baking cake or cookies?", cat:{ gourmand:1 } },
+  { id:"s25", text:"Do you enjoy the smell of chocolate or cocoa powder?", cat:{ gourmand:1 } },
+  { id:"s26", text:"Do you like nutty smells, like that of almonds or hazelnuts?", cat:{ gourmand:1 } },
+  { id:"s27", text:"Do you enjoy the aroma of freshly brewed coffee?", cat:{ gourmand:1 } },
+  { id:"s28", text:"Do you like the smell of fresh cream?", cat:{ gourmand:1 } },
+  { id:"s29", text:"Do you enjoy warm spices like cinnamon or clove?", cat:{ spicy:1 } },
+  { id:"s30", text:"Do you like the smell of bright spices like ginger or cardamom?", cat:{ spicy:1 } },
+  { id:"s31", text:"Do you enjoy the smell of incense or old churches?", cat:{ spicy:0.6, amber:0.4 } },
+  { id:"s32", text:"Do you like the smell of fresh, clean laundry?", cat:{ musk:1 } },
+  { id:"s33", text:"Do you enjoy the smell of classic soaps or shampoos?", cat:{ musk:1 } },
+  { id:"s34", text:"Do you like the smell of ocean air or sea breeze?", cat:{ aquatic:1 } },
+  { id:"s35", text:"Do you enjoy the smell of a fresh mountain stream or other clean, running water?", cat:{ aquatic:1 } },
+  { id:"s36", text:"Do you like the smell of cold winter air?", cat:{ aquatic:1 } },
+  { id:"s37", text:"Do you enjoy the smell of leather, like a real leather jacket or purse?", cat:{ leather_tobacco:1 } },
+  { id:"s38", text:"Do you like the smell of old books or aged paper?", cat:{ woody:0.5, amber:0.25, leather_tobacco:0.25 } },
+  { id:"s39", text:"Do you like the smell of whiskey or aged barrel spirits?", cat:{ leather_tobacco:1 } },
+  { id:"s40", text:"Do you enjoy the smell of tobacco, such as loose tobacco leaves or unlit cigars?", cat:{ leather_tobacco:1 } },
+  { id:"s41", text:"Do you like the smell of burning candle wax?", cat:{ amber:0.7, gourmand:0.3 } },
+  { id:"s42", text:"Do you enjoy the smell of honey or golden syrup?", cat:{ gourmand:0.7, amber:0.3 } },
+  { id:"s43", text:"Do you like the smell of soft, cozy fabrics like wool or cashmere?", cat:{ musk:1 } },
+  { id:"s44", text:"Do you enjoy the smell of clean, damp skin after a shower?", cat:{ musk:1 } },
+  { id:"s45", text:"Do you like the smell of warm skin after exercise?", cat:{ musk:0.5, animalic:0.5 } },
+  { id:"s46", text:"Do you enjoy the smell of soft animal fur?", cat:{ musk:0.6, animalic:0.4 } },
+  { id:"s47", text:"Do you like the smell of horses, stables, or worn leather saddles?", cat:{ leather_tobacco:0.5, animalic:0.3, woody:0.2 } },
+  { id:"s48", text:"Do you enjoy the smell of fruit pies, jam, or fruit preserves?", cat:{ fruity:1 } },
+  { id:"s49", text:"Do you like the smell of Earl Grey tea or other fragrant, citrus-y tea blends?", cat:{ citrus:0.7, green:0.3 } },
+  { id:"s50", text:"Do you like the smell of fresh-brewed tea?", cat:{ green:0.5, woody:0.25, citrus:0.25 } },
+];
+
+const CATEGORIES = [
+  { key:"green", label:"Green" },
+  { key:"floral", label:"Floral" },
+  { key:"fruity", label:"Fruity" },
+  { key:"citrus", label:"Citrus" },
+  { key:"woody", label:"Woody" },
+  { key:"aquatic", label:"Aquatic / Fresh Air" },
+  { key:"gourmand", label:"Gourmand" },
+  { key:"spicy", label:"Spicy" },
+  { key:"amber", label:"Amber" },
+  { key:"leather_tobacco", label:"Leather / Tobacco" },
+  { key:"musk", label:"Musk" },
+  { key:"animalic", label:"Animalic" },
+];
+
+const BOOST = new Set(["green","citrus","floral","fruity","aquatic"]);
+const PRIMARY = new Set(["green","floral","fruity","citrus","woody","aquatic","gourmand","spicy","leather_tobacco","musk"]);
+
+// ─── STATE ──────────────────────────────────────────────────────────────────
+
+const state = {
+  phase: "intro",   // intro | vibes | scent | results
+  idx: 0,
+  name: "",
+  vibes: {},
+  scent: {},
+};
+
+// ─── SCORING ────────────────────────────────────────────────────────────────
+
+function calcResults() {
+  const sums = {}, wts = {};
+  CATEGORIES.forEach(c => { sums[c.key] = 0; wts[c.key] = 0; });
+
+  SCENT_QUESTIONS.forEach(q => {
+    const a = state.scent[q.id];
+    if (a == null) return;
+    const v = SCORE_VALUES[a];
+    for (const [k, w] of Object.entries(q.cat)) {
+      sums[k] += v * w;
+      wts[k] += w;
+    }
+  });
+
+  const scores = {};
+  CATEGORIES.forEach(c => {
+    scores[c.key] = wts[c.key] > 0 ? sums[c.key] / wts[c.key] : 0;
+  });
+
+  // +10% boost for fresh categories
+  BOOST.forEach(k => { scores[k] *= 1.1; });
+
+  // Cap amber & animalic at 60% of max primary
+  const maxP = Math.max(...[...PRIMARY].map(k => Math.abs(scores[k])));
+  const cap = maxP * 0.6;
+  ["amber","animalic"].forEach(k => {
+    if (Math.abs(scores[k]) > cap) scores[k] = Math.sign(scores[k]) * cap;
+  });
+
+  // Clamp
+  CATEGORIES.forEach(c => { scores[c.key] = Math.max(-2, Math.min(2, scores[c.key])); });
+
+  return CATEGORIES.map(c => {
+    const s = scores[c.key];
+    const pct = ((s + 2) / 4) * 100;
+    let label;
+    if (s >= 1.5) label = "Strong Like";
+    else if (s >= 0.5) label = "Like";
+    else if (s > -0.5) label = "Neutral";
+    else if (s > -1.5) label = "Dislike";
+    else label = "Strong Dislike";
+    return { key: c.key, name: c.label, score: Math.round(s * 100) / 100, pct: Math.round(pct), label };
+  });
+}
+
+// ─── RENDER ─────────────────────────────────────────────────────────────────
+
+const $ = document.getElementById.bind(document);
+const app = () => $("app");
+
+function render() {
+  const el = app();
+  switch (state.phase) {
+    case "intro":   return renderIntro(el);
+    case "vibes":   return renderVibes(el);
+    case "scent":   return renderScent(el);
+    case "results": return renderResults(el);
+  }
+}
+
+function renderIntro(el) {
+  el.innerHTML = `
+    <h1>Signature Scent Discovery Quiz</h1>
+    <p class="subtitle">55 questions about everyday smells &mdash; no fragrance knowledge needed.<br>
+    Your answers will map to 12 scent categories to build your personal scent profile.</p>
+    <label class="name-label">Your name (for the report)</label>
+    <input class="name-input" type="text" placeholder="Enter your name" id="nameInput" value="${esc(state.name)}">
+    <div class="nav">
+      <span></span>
+      <button class="btn-primary" id="startBtn" ${state.name.trim() ? '' : 'disabled'}>Start Quiz &rarr;</button>
+    </div>
+  `;
+  $("nameInput").addEventListener("input", e => {
+    state.name = e.target.value;
+    $("startBtn").disabled = !state.name.trim();
+  });
+  $("startBtn").addEventListener("click", () => {
+    state.phase = "vibes"; state.idx = 0; render();
+  });
+}
+
+function renderVibes(el) {
+  const q = VIBES_QUESTIONS[state.idx];
+  const total = VIBES_QUESTIONS.length + SCENT_QUESTIONS.length;
+  const pct = (state.idx / total) * 100;
+
+  el.innerHTML = `
+    <p class="progress-text">Vibes Diagnostic &mdash; Question ${state.idx + 1} of ${VIBES_QUESTIONS.length}</p>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <p class="question-text">${esc(q.text)}</p>
+    <div id="options"></div>
+    <div class="nav">
+      ${state.idx > 0 ? '<button class="btn-outline" id="backBtn">&larr; Back</button>' : '<span></span>'}
+      <span></span>
+    </div>
+  `;
+
+  const optBox = $("options");
+  q.options.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.className = "option-btn" + (state.vibes[q.id] === opt ? " selected" : "");
+    btn.textContent = opt;
+    btn.addEventListener("click", () => {
+      state.vibes[q.id] = opt;
+      setTimeout(() => {
+        if (state.idx < VIBES_QUESTIONS.length - 1) state.idx++;
+        else { state.phase = "scent"; state.idx = 0; }
+        render();
+      }, 200);
+      // Immediately show selection
+      optBox.querySelectorAll(".option-btn").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+    });
+    optBox.appendChild(btn);
+  });
+
+  if ($("backBtn")) $("backBtn").addEventListener("click", () => { state.idx--; render(); });
+}
+
+function renderScent(el) {
+  const q = SCENT_QUESTIONS[state.idx];
+  const total = VIBES_QUESTIONS.length + SCENT_QUESTIONS.length;
+  const pct = ((VIBES_QUESTIONS.length + state.idx) / total) * 100;
+  const answered = Object.keys(state.scent).length;
+
+  el.innerHTML = `
+    <p class="progress-text">Scent Profile &mdash; Question ${state.idx + 1} of ${SCENT_QUESTIONS.length}</p>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <p class="question-text">${esc(q.text)}</p>
+    <div id="options"></div>
+    <div class="nav">
+      <button class="btn-outline" id="backBtn">&larr; Back</button>
+      <span class="answered-count">${answered} / ${SCENT_QUESTIONS.length} answered</span>
+    </div>
+  `;
+
+  const optBox = $("options");
+  SCENT_OPTIONS.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.className = "option-btn" + (state.scent[q.id] === opt ? " selected" : "");
+    btn.textContent = opt;
+    btn.addEventListener("click", () => {
+      state.scent[q.id] = opt;
+      setTimeout(() => {
+        if (state.idx < SCENT_QUESTIONS.length - 1) state.idx++;
+        else state.phase = "results";
+        render();
+      }, 200);
+      optBox.querySelectorAll(".option-btn").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+    });
+    optBox.appendChild(btn);
+  });
+
+  $("backBtn").addEventListener("click", () => {
+    if (state.idx > 0) state.idx--;
+    else { state.phase = "vibes"; state.idx = VIBES_QUESTIONS.length - 1; }
+    render();
+  });
+}
+
+function renderResults(el) {
+  const results = calcResults();
+
+  let vibesHtml = VIBES_QUESTIONS.map(q =>
+    `<div class="vibes-row"><span class="q">${esc(q.text)}</span> <span class="a">${esc(state.vibes[q.id] || "\u2014")}</span></div>`
+  ).join("");
+
+  let slidersHtml = results.map(r => `
+    <div class="cat-row">
+      <div class="cat-label">${esc(r.name)}</div>
+      <div class="slider-track">
+        <div class="slider-center"></div>
+        <div class="slider-dot" style="left:${r.pct}%"></div>
+      </div>
+      <div class="score-label">${r.score > 0 ? "+" : ""}${r.score} &middot; ${r.label}</div>
+    </div>
+  `).join("");
+
+  let tableRows = results.map(r => `
+    <tr>
+      <td>${esc(r.name)}</td>
+      <td>${r.score > 0 ? "+" : ""}${r.score}</td>
+      <td>${r.pct}%</td>
+      <td>${r.label}</td>
+    </tr>
+  `).join("");
+
+  const exportData = JSON.stringify({ name: state.name, vibes: state.vibes, results }, null, 2);
+
+  el.innerHTML = `
+    <h1>Scent Profile: ${esc(state.name)}</h1>
+    <p class="subtitle">Your signature scent coordinates across 12 categories.</p>
+
+    <div class="vibes-box">
+      <strong>Vibes Diagnostic</strong>
+      ${vibesHtml}
+    </div>
+
+    <div class="axis-labels">
+      <span>Less Likely to Enjoy</span>
+      <span>Neutral</span>
+      <span>More Likely to Enjoy</span>
+    </div>
+
+    ${slidersHtml}
+
+    <details>
+      <summary>Raw score data</summary>
+      <table>
+        <thead><tr><th>Category</th><th>Score</th><th>Strength</th><th>Label</th></tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </details>
+
+    <details>
+      <summary>Export JSON (for email integration)</summary>
+      <pre class="json">${esc(exportData)}</pre>
+    </details>
+
+    <button class="btn-outline" style="margin-top:28px" id="retakeBtn">&circlearrowleft; Retake Quiz</button>
+  `;
+
+  $("retakeBtn").addEventListener("click", () => {
+    state.phase = "intro"; state.idx = 0; state.vibes = {}; state.scent = {}; state.name = "";
+    render();
+  });
+}
+
+// ─── UTILS ──────────────────────────────────────────────────────────────────
+
+function esc(s) {
+  const d = document.createElement("div");
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ─── INIT ───────────────────────────────────────────────────────────────────
+
+render();
+
+</script>
+</body>
+</html>
