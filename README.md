@@ -1,32 +1,39 @@
-# Signature Scent Discovery Quiz
+# Top Note — Signature Scent Discovery Quiz
 
-A single-page quiz that maps everyday smell preferences to 12 fragrance categories. No fragrance knowledge required — users respond to familiar scents (fresh grass, coffee, leather, etc.) and get a personalized scent profile.
+A single-page fragrance-discovery quiz that maps everyday smell preferences to
+twelve scent families. Vintage perfume-magazine aesthetic — warm ivory paper,
+classical serif display, a translucent red poppy, self-hosted fonts.
 
-## How it works
+## Hosting on GitHub Pages
 
-- **5 Vibes Diagnostic questions** — recorded for the consultant, not scored
-- **50 Scent Profile questions** — each rated Love it → Hate it (+2 to -2)
-- **Weighted scoring** across 12 categories (Green, Floral, Fruity, Citrus, Woody, Aquatic, Gourmand, Spicy, Amber, Leather/Tobacco, Musk, Animalic)
-- Results displayed as spectrum sliders from "Less Likely to Enjoy" to "More Likely to Enjoy"
+This folder is fully self-contained — no build step, no dependencies, no network
+calls. To publish:
 
-## Running locally
+1. Put these files at the **root of your repo** (so `index.html` is at the top).
+2. In your repo: **Settings → Pages → Build and deployment → Source: Deploy from
+   a branch**, pick your branch and `/ (root)`, save.
+3. Your quiz goes live at `https://<you>.github.io/<repo>/`.
 
-Open `index.html` in a browser. 
-
-## Hosting
-
-Hosted via GitHub Pages. Push to `main` and enable Pages in repo settings.
-
-**Live URL:** `[TODO: add URL once Pages is enabled]`
-
-## Architecture
+## Files
 
 ```
-index.html          ← the entire quiz (single file, vanilla JS)
-README.md
-.gitignore
+index.html              the page (open this)
+quiz.css                all styling
+quiz-data.js            questions, categories, scoring
+quiz-app.js             render + interaction logic
+image-slot.js           the drag-to-fill image component
+assets/
+  poppy-float4.png      the cover poppy graphic
+  scent-profile-2.jpg   Part II hero photo
+  fonts/                Syne + Cormorant (self-hosted, OFL 1.1)
 ```
 
-Email delivery of results is handled by a separate Google Apps Script that receives quiz results via POST and sends formatted reports through Gmail. (Not yet implemented.)
+## Email delivery (optional)
 
+Results email is stubbed off by default. To enable it, paste your Google Apps
+Script web-app URL into `SCRIPT_URL` at the top of `quiz-app.js`.
 
+## Fonts
+
+Syne and Cormorant are bundled under `assets/fonts/` and licensed under the SIL
+Open Font License 1.1 (see the `*-OFL.txt` files).
