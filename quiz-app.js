@@ -1,6 +1,6 @@
 /* Top Note Scent Quiz — render + interaction. Vanilla. */
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwi7pACCBNfRwyMBtYXaAKYl8S-66jLLN6a5rThGSPGduFWz1nnDCc3oq--fEVWatTs/exec"; // ← paste your Apps Script web-app URL here to enable email delivery
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxDNflG6klvndsSev2L1rWazdfIu1LtU9G2IB0uwUT2tuRBWqJm5xLfMoNLi3HfZftq/exec"; // ← paste your Apps Script web-app URL here to enable email delivery
 
 const state = { phase: "intro", idx: 0, name: "", vibes: {}, scent: {} };
 
@@ -148,7 +148,8 @@ function renderScent(el) {
 }
 
 function renderResults(el) {
-  setFrame("Top Note", "Your Profile", esc(state.name || ""));
+  setFrame("Top Note", "Signature Profile", esc(state.name || ""));
+  $("fCenter").style.color = "var(--red-deep)";
   const results = calcResults(state.scent).sort((a, b) => b.score - a.score);
 
   const vibesHtml = VIBES_QUESTIONS.map(q =>
@@ -188,7 +189,6 @@ function renderResults(el) {
     <div class="cover">
       <div class="cover-bloom" aria-hidden="true"></div>
       <div class="cover-copy">
-        <p class="eyebrow">Signature Profile</p>
         <h1>${esc(state.name || "Your")}\u2019s<br>scent map.</h1>
         <p class="subtitle">Your strongest affinities lean toward <em>${esc(top3)}</em>. Below, your
         coordinates across all twelve families.</p>
@@ -200,7 +200,7 @@ function renderResults(el) {
       ${vibesHtml}
     </div>
 
-    <div class="frame-head"><span class="frame-label">The Scent Map</span><span class="rule"></span></div>
+    <div class="frame-head"><span class="frame-label">The Scent Map</span></div>
     <div class="axis-labels"><span>Less Likely</span><span>Neutral</span><span>More Likely</span></div>
     ${slidersHtml}
 

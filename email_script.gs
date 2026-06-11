@@ -78,7 +78,7 @@ function buildEmailHtml(name, vibes, results) {
   var INK     = "#221e18";
   var INK_MID = "#6a6053";
   var INK_DIM = "#9a8f7d";
-  var RULE    = "#c5baa2";
+  var RULE    = "#d2c8b2";
   var RED_DEEP= "#9c2a1c";
   var SERIF   = "'Cormorant', Georgia, 'Times New Roman', serif";
   var SANS    = "'Syne', 'Helvetica Neue', Arial, sans-serif";
@@ -94,7 +94,7 @@ function buildEmailHtml(name, vibes, results) {
   ].map(function(v) { return '\
     <tr>\
       <td style="padding:6px 0;font-family:' + SERIF + ';font-size:15px;font-style:italic;color:' + INK_MID + ';vertical-align:top;">' + v.q + '</td>\
-      <td style="padding:6px 0 6px 12px;font-family:' + SERIF + ';font-size:15px;font-weight:600;color:' + INK + ';vertical-align:top;">' + esc(vibes[v.id] || "—") + '</td>\
+      <td style="padding:6px 0 6px 12px;font-family:' + SERIF + ';font-size:15px;font-weight:400;color:' + INK + ';vertical-align:top;">' + esc(vibes[v.id] || "—") + '</td>\
     </tr>';
   }).join("");
 
@@ -141,16 +141,13 @@ function buildEmailHtml(name, vibes, results) {
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation">\
       <tr>\
         <td style="font-family:' + SANS + ';font-size:10px;font-weight:500;letter-spacing:0.34em;text-transform:uppercase;color:' + INK_MID + ';">Top Note</td>\
-        <td style="text-align:center;font-family:' + SANS + ';font-size:10px;font-weight:500;letter-spacing:0.28em;text-transform:uppercase;color:' + INK_MID + ';">Your Profile</td>\
+        <td style="text-align:center;font-family:' + SANS + ';font-size:10px;font-weight:600;letter-spacing:0.28em;text-transform:uppercase;color:' + RED_DEEP + ';">Signature Profile</td>\
         <td style="text-align:right;font-family:' + SANS + ';font-size:10px;font-weight:500;letter-spacing:0.34em;text-transform:uppercase;color:' + INK_MID + ';">' + esc(name) + '</td>\
       </tr>\
     </table>\
   </td></tr>\
 \
-  <!-- Eyebrow + headline -->\
-  <tr><td style="padding-bottom:6px;">\
-    <div style="font-family:' + SANS + ';font-size:10px;font-weight:600;letter-spacing:0.36em;text-transform:uppercase;color:' + RED_DEEP + ';">Signature Profile</div>\
-  </td></tr>\
+  <!-- Headline -->\
   <tr><td style="padding-bottom:8px;">\
     <h1 style="margin:0;font-family:' + SERIF + ';font-size:36px;font-weight:500;line-height:1.0;color:' + INK + ';">' + esc(name) + '’s<br>scent map.</h1>\
   </td></tr>\
@@ -170,12 +167,7 @@ function buildEmailHtml(name, vibes, results) {
 \
   <!-- Scent Map header -->\
   <tr><td style="padding-bottom:20px;">\
-    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">\
-      <tr>\
-        <td style="font-family:' + SANS + ';font-size:10px;font-weight:600;letter-spacing:0.3em;text-transform:uppercase;color:' + INK_DIM + ';white-space:nowrap;padding-right:12px;">The Scent Map</td>\
-        <td style="width:100%;border-bottom:1px solid ' + RULE + ';"></td>\
-      </tr>\
-    </table>\
+    <div style="font-family:' + SANS + ';font-size:10px;font-weight:600;letter-spacing:0.3em;text-transform:uppercase;color:' + INK_DIM + ';">The Scent Map</div>\
   </td></tr>\
 \
   <!-- Axis labels -->\
@@ -205,7 +197,7 @@ function buildEmailHtml(name, vibes, results) {
   </td></tr>\
 \
   <!-- Footer -->\
-  <tr><td style="padding-top:40px;border-top:1px solid ' + RULE + ';margin-top:32px;">\
+  <tr><td style="padding-top:68px;border-top:1px solid ' + RULE + ';">\
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation">\
       <tr>\
         <td style="font-family:' + SANS + ';font-size:9px;font-weight:500;letter-spacing:0.3em;text-transform:uppercase;color:' + INK_DIM + ';">A Signature Scent Diagnostic</td>\
