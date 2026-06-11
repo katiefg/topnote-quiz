@@ -22,16 +22,22 @@ quiz.css                all styling
 quiz-data.js            questions, categories, scoring
 quiz-app.js             render + interaction logic
 image-slot.js           the drag-to-fill image component
+email_script.gs         Google Apps Script email backend (paste into script editor)
 assets/
-  poppy-float4.png      the cover poppy graphic
+  poppy-float5.png      the cover poppy graphic
   scent-profile-2.jpg   Part II hero photo
   fonts/                Syne + Cormorant (self-hosted, OFL 1.1)
 ```
 
 ## Email delivery (optional)
 
-Results email is stubbed off by default. To enable it, paste your Google Apps
-Script web-app URL into `SCRIPT_URL` at the top of `quiz-app.js`.
+Results email is stubbed off by default. To enable it:
+
+1. Paste your Google Apps Script web-app URL into `SCRIPT_URL` at the top of
+   `quiz-app.js`
+2. For the server side, paste `email_script.gs` into Google Apps Script and
+   update `OWNER_EMAIL` in the script editor (that copy lives in Google, not
+   in this repo)
 
 ## Fonts
 

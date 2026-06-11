@@ -1,6 +1,6 @@
 /* Top Note Scent Quiz — render + interaction. Vanilla. */
 
-const SCRIPT_URL = ""; // ← paste your Apps Script web-app URL here to enable email delivery
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwi7pACCBNfRwyMBtYXaAKYl8S-66jLLN6a5rThGSPGduFWz1nnDCc3oq--fEVWatTs/exec"; // ← paste your Apps Script web-app URL here to enable email delivery
 
 const state = { phase: "intro", idx: 0, name: "", vibes: {}, scent: {} };
 

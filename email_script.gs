@@ -57,114 +57,168 @@ function jsonResponse(obj) {
 
 // ─── EMAIL TEMPLATE ─────────────────────────────────────────────────────────
 
+function lerpColor(pct) {
+  var lo  = [126, 138, 145];
+  var mid = [199, 188, 162];
+  var hi  = [184, 125, 34];
+  var r, g, b;
+  if (pct <= 50) {
+    var t = pct / 50;
+    r = Math.round(lo[0] + (mid[0]-lo[0])*t); g = Math.round(lo[1] + (mid[1]-lo[1])*t); b = Math.round(lo[2] + (mid[2]-lo[2])*t);
+  } else {
+    var t2 = (pct-50)/50;
+    r = Math.round(mid[0] + (hi[0]-mid[0])*t2); g = Math.round(mid[1] + (hi[1]-mid[1])*t2); b = Math.round(mid[2] + (hi[2]-mid[2])*t2);
+  }
+  return "rgb(" + r + "," + g + "," + b + ")";
+}
+
 function buildEmailHtml(name, vibes, results) {
-  const vibesRows = [
+  var PAPER   = "#e7e0d0";
+  var PAPER2  = "#ded4c0";
+  var INK     = "#221e18";
+  var INK_MID = "#6a6053";
+  var INK_DIM = "#9a8f7d";
+  var RULE    = "#c5baa2";
+  var RED_DEEP= "#9c2a1c";
+  var SERIF   = "'Cormorant', Georgia, 'Times New Roman', serif";
+  var SANS    = "'Syne', 'Helvetica Neue', Arial, sans-serif";
+
+  var top3 = results.slice(0, 3).map(function(r) { return r.name; }).join(" · ");
+
+  var vibesRows = [
     { id: "v1", q: "Looking for a scent for…" },
     { id: "v2", q: "Scent should be…" },
     { id: "v3", q: "Fragrance style…" },
     { id: "v4", q: "Fragrance personality…" },
     { id: "v5", q: "Scent presence…" },
-  ].map(v => `
-    <tr>
-      <td style="padding:4px 8px;color:#888888;font-size:13px;">${v.q}</td>
-      <td style="padding:4px 8px;font-size:13px;font-weight:600;">${esc(vibes[v.id] || "—")}</td>
-    </tr>
-  `).join("");
-
-  const sliderRows = results.map(r => {
-    // Build a simple slider using a 3-cell table
-    // Left spacer (pct width) | dot | right spacer
-    const pct = Math.max(2, Math.min(98, r.pct)); // clamp so dot stays visible
-    const scoreStr = (r.score > 0 ? "+" : "") + r.score;
-
-    return `
-    <tr>
-      <td style="padding:6px 12px 6px 0;text-align:right;font-size:13px;font-weight:500;width:130px;vertical-align:middle;">
-        ${esc(r.name)}
-      </td>
-      <td style="padding:6px 0;vertical-align:middle;">
-        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;">
-          <tr>
-            <td style="width:${pct}%;height:6px;background:#eeeeee;"></td>
-            <td style="width:14px;vertical-align:middle;">
-              <div style="width:14px;height:14px;border-radius:7px;background:#333333;"></div>
-            </td>
-            <td style="height:6px;background:#eeeeee;"></td>
-          </tr>
-        </table>
-      </td>
-      <td style="padding:6px 0 6px 12px;font-size:12px;color:#666666;width:100px;vertical-align:middle;white-space:nowrap;">
-        ${scoreStr} · ${r.label}
-      </td>
-    </tr>`;
+  ].map(function(v) { return '\
+    <tr>\
+      <td style="padding:6px 0;font-family:' + SERIF + ';font-size:15px;font-style:italic;color:' + INK_MID + ';vertical-align:top;">' + v.q + '</td>\
+      <td style="padding:6px 0 6px 12px;font-family:' + SERIF + ';font-size:15px;font-weight:600;color:' + INK + ';vertical-align:top;">' + esc(vibes[v.id] || "—") + '</td>\
+    </tr>';
   }).join("");
 
-  return `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background:#ffffff;font-family:Arial,Helvetica,sans-serif;color:#222222;">
-<table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-<tr><td align="center" style="padding:32px 16px;">
-<table width="560" cellpadding="0" cellspacing="0" role="presentation" style="max-width:560px;width:100%;">
+  var sliderRows = results.map(function(r) {
+    var pct = Math.max(3, Math.min(97, r.pct));
+    var scoreStr = (r.score > 0 ? "+" : "") + r.score;
+    var dotColor = lerpColor(pct);
+    return '\
+    <tr>\
+      <td style="padding:7px 14px 7px 0;text-align:right;font-family:' + SERIF + ';font-size:16px;font-weight:500;color:' + INK + ';width:120px;vertical-align:middle;">\
+        ' + esc(r.name) + '\
+      </td>\
+      <td style="padding:7px 0;vertical-align:middle;">\
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;">\
+          <tr>\
+            <td style="width:' + pct + '%;height:3px;background:' + RULE + ';"></td>\
+            <td style="width:12px;vertical-align:middle;">\
+              <div style="width:12px;height:12px;border-radius:6px;background:' + dotColor + ';border:2px solid ' + PAPER + ';"></div>\
+            </td>\
+            <td style="height:3px;background:' + RULE + ';"></td>\
+          </tr>\
+        </table>\
+      </td>\
+      <td style="padding:7px 0 7px 14px;font-family:' + SANS + ';font-size:9px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:' + INK_MID + ';width:90px;vertical-align:middle;white-space:nowrap;">\
+        ' + scoreStr + ' &middot; ' + r.label + '\
+      </td>\
+    </tr>';
+  }).join("");
 
-  <!-- Header -->
-  <tr><td style="padding-bottom:4px;">
-    <h1 style="margin:0;font-size:22px;font-weight:700;">Scent Profile: ${esc(name)}</h1>
-  </td></tr>
-  <tr><td style="padding-bottom:24px;font-size:14px;color:#666666;">
-    Your signature scent coordinates across 12 categories.
-  </td></tr>
-
-  <!-- Vibes Diagnostic -->
-  <tr><td style="padding-bottom:24px;">
-    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"
-           style="background:#f9f9f9;border-radius:8px;">
-      <tr><td style="padding:16px;">
-        <div style="font-weight:600;font-size:14px;margin-bottom:8px;">Vibes Diagnostic</div>
-        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-          ${vibesRows}
-        </table>
-      </td></tr>
-    </table>
-  </td></tr>
-
-  <!-- Axis labels -->
-  <tr><td>
-    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-      <tr>
-        <td width="130" style="padding-right:12px;"></td>
-        <td style="font-size:11px;color:#999999;padding-bottom:12px;">
-          <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-            <tr>
-              <td style="text-align:left;">Less Likely</td>
-              <td style="text-align:center;">Neutral</td>
-              <td style="text-align:right;">More Likely</td>
-            </tr>
-          </table>
-        </td>
-        <td width="100"></td>
-      </tr>
-    </table>
-  </td></tr>
-
-  <!-- Sliders -->
-  <tr><td>
-    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-      ${sliderRows}
-    </table>
-  </td></tr>
-
-  <!-- Footer -->
-  <tr><td style="padding-top:32px;font-size:12px;color:#999999;border-top:1px solid #eeeeee;margin-top:24px;">
-    Generated by ${esc(CONFIG.QUIZ_NAME)}
-  </td></tr>
-
-</table>
-</td></tr>
-</table>
-</body>
-</html>`;
+  return '\
+<!DOCTYPE html>\
+<html>\
+<head>\
+<meta charset="utf-8">\
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300..600;1,300..600&family=Syne:wght@400..800&display=swap" rel="stylesheet">\
+</head>\
+<body style="margin:0;padding:0;background:' + PAPER + ';font-family:' + SERIF + ';color:' + INK + ';">\
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:' + PAPER + ';">\
+<tr><td align="center" style="padding:48px 20px;">\
+<table width="560" cellpadding="0" cellspacing="0" role="presentation" style="max-width:560px;width:100%;">\
+\
+  <!-- Top frame label -->\
+  <tr><td style="padding-bottom:40px;">\
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">\
+      <tr>\
+        <td style="font-family:' + SANS + ';font-size:10px;font-weight:500;letter-spacing:0.34em;text-transform:uppercase;color:' + INK_MID + ';">Top Note</td>\
+        <td style="text-align:center;font-family:' + SANS + ';font-size:10px;font-weight:500;letter-spacing:0.28em;text-transform:uppercase;color:' + INK_MID + ';">Your Profile</td>\
+        <td style="text-align:right;font-family:' + SANS + ';font-size:10px;font-weight:500;letter-spacing:0.34em;text-transform:uppercase;color:' + INK_MID + ';">' + esc(name) + '</td>\
+      </tr>\
+    </table>\
+  </td></tr>\
+\
+  <!-- Eyebrow + headline -->\
+  <tr><td style="padding-bottom:6px;">\
+    <div style="font-family:' + SANS + ';font-size:10px;font-weight:600;letter-spacing:0.36em;text-transform:uppercase;color:' + RED_DEEP + ';">Signature Profile</div>\
+  </td></tr>\
+  <tr><td style="padding-bottom:8px;">\
+    <h1 style="margin:0;font-family:' + SERIF + ';font-size:36px;font-weight:500;line-height:1.0;color:' + INK + ';">' + esc(name) + '’s<br>scent map.</h1>\
+  </td></tr>\
+  <tr><td style="padding-bottom:40px;">\
+    <p style="margin:0;font-family:' + SERIF + ';font-size:17px;font-weight:400;font-style:italic;color:' + INK_MID + ';line-height:1.55;">Your strongest affinities lean toward <em>' + esc(top3) + '</em>. Below, your coordinates across all twelve families.</p>\
+  </td></tr>\
+\
+  <!-- Vibes Diagnostic -->\
+  <tr><td style="border-top:1px solid ' + RULE + ';border-bottom:1px solid ' + RULE + ';padding:22px 0;margin-bottom:40px;">\
+    <div style="font-family:' + SANS + ';font-size:10px;font-weight:600;letter-spacing:0.3em;text-transform:uppercase;color:' + INK_DIM + ';margin-bottom:16px;">Vibes Diagnostic</div>\
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">\
+      ' + vibesRows + '\
+    </table>\
+  </td></tr>\
+\
+  <tr><td style="height:40px;"></td></tr>\
+\
+  <!-- Scent Map header -->\
+  <tr><td style="padding-bottom:20px;">\
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">\
+      <tr>\
+        <td style="font-family:' + SANS + ';font-size:10px;font-weight:600;letter-spacing:0.3em;text-transform:uppercase;color:' + INK_DIM + ';white-space:nowrap;padding-right:12px;">The Scent Map</td>\
+        <td style="width:100%;border-bottom:1px solid ' + RULE + ';"></td>\
+      </tr>\
+    </table>\
+  </td></tr>\
+\
+  <!-- Axis labels -->\
+  <tr><td>\
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">\
+      <tr>\
+        <td width="120" style="padding-right:14px;"></td>\
+        <td style="font-family:' + SANS + ';font-size:8px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:' + INK_DIM + ';padding-bottom:18px;">\
+          <table width="100%" cellpadding="0" cellspacing="0" role="presentation">\
+            <tr>\
+              <td style="text-align:left;">Less Likely</td>\
+              <td style="text-align:center;">Neutral</td>\
+              <td style="text-align:right;">More Likely</td>\
+            </tr>\
+          </table>\
+        </td>\
+        <td width="90"></td>\
+      </tr>\
+    </table>\
+  </td></tr>\
+\
+  <!-- Sliders -->\
+  <tr><td>\
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">\
+      ' + sliderRows + '\
+    </table>\
+  </td></tr>\
+\
+  <!-- Footer -->\
+  <tr><td style="padding-top:40px;border-top:1px solid ' + RULE + ';margin-top:32px;">\
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">\
+      <tr>\
+        <td style="font-family:' + SANS + ';font-size:9px;font-weight:500;letter-spacing:0.3em;text-transform:uppercase;color:' + INK_DIM + ';">A Signature Scent Diagnostic</td>\
+        <td style="text-align:right;font-family:' + SANS + ';font-size:9px;font-weight:500;letter-spacing:0.3em;text-transform:uppercase;color:' + INK_DIM + ';">Top Note</td>\
+      </tr>\
+    </table>\
+  </td></tr>\
+\
+</table>\
+</td></tr>\
+</table>\
+</body>\
+</html>';
 }
 
 function esc(s) {
