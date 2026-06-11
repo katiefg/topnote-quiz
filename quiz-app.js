@@ -1,6 +1,6 @@
 /* Top Note Scent Quiz — render + interaction. Vanilla. */
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxDNflG6klvndsSev2L1rWazdfIu1LtU9G2IB0uwUT2tuRBWqJm5xLfMoNLi3HfZftq/exec"; // ← paste your Apps Script web-app URL here to enable email delivery
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwqx7IzJUE1NGeVrycpxAaDq3N_3ePDOBAFzRUVkATORBntWkQ6eq7hOJokSX4djWbF/exec"; // ← paste your Apps Script web-app URL here to enable email delivery
 
 const state = { phase: "intro", idx: 0, name: "", vibes: {}, scent: {} };
 
@@ -16,9 +16,23 @@ function setFrame(left, center, right) {
   $("fRight").textContent = right || "";
 }
 
-function render() {
+function render(soft) {
   const el = app();
-  el.classList.remove("fade"); void el.offsetWidth; el.classList.add("fade");
+  if (soft) {
+    el.classList.add("fading-out");
+    setTimeout(() => {
+      el.classList.remove("fading-out");
+      el.classList.remove("fade"); void el.offsetWidth; el.classList.add("fade");
+      renderPhase(el);
+    }, 300);
+  } else {
+    el.classList.remove("fading-out");
+    el.classList.remove("fade"); void el.offsetWidth; el.classList.add("fade");
+    renderPhase(el);
+  }
+}
+
+function renderPhase(el) {
   switch (state.phase) {
     case "intro":        return renderIntro(el);
     case "vibes":        return renderVibes(el);
@@ -53,7 +67,7 @@ function renderIntro(el) {
   $("nameInput").addEventListener("keydown", e => {
     if (e.key === "Enter" && state.name.trim()) $("startBtn").click();
   });
-  $("startBtn").addEventListener("click", () => { state.phase = "vibes"; state.idx = 0; render(); });
+  $("startBtn").addEventListener("click", () => { state.phase = "vibes"; state.idx = 0; render(true); });
 }
 
 function optionList(opts, getSel, onPick) {
@@ -65,7 +79,7 @@ function optionList(opts, getSel, onPick) {
     btn.addEventListener("click", () => {
       box.querySelectorAll(".option-btn").forEach(b => b.classList.remove("selected"));
       btn.classList.add("selected");
-      setTimeout(() => onPick(opt), 240);
+      setTimeout(() => onPick(opt), 320);
     });
     box.appendChild(btn);
   });
@@ -94,9 +108,9 @@ function renderVibes(el) {
     state.vibes[q.id] = opt;
     if (state.idx < VIBES_QUESTIONS.length - 1) state.idx++;
     else { state.phase = "interstitial"; state.idx = 0; }
-    render();
+    render(true);
   });
-  if ($("backBtn")) $("backBtn").addEventListener("click", () => { state.idx--; render(); });
+  if ($("backBtn")) $("backBtn").addEventListener("click", () => { state.idx--; render(true); });
 }
 
 function renderInterstitial(el) {
@@ -111,7 +125,7 @@ function renderInterstitial(el) {
       <button class="btn-primary" id="continueBtn">Continue</button>
     </div>
   `;
-  $("continueBtn").addEventListener("click", () => { state.phase = "scent"; state.idx = 0; render(); });
+  $("continueBtn").addEventListener("click", () => { state.phase = "scent"; state.idx = 0; render(true); });
 }
 
 function renderScent(el) {
@@ -138,12 +152,12 @@ function renderScent(el) {
     state.scent[q.id] = opt;
     if (state.idx < SCENT_QUESTIONS.length - 1) state.idx++;
     else state.phase = "results";
-    render();
+    render(true);
   });
   $("backBtn").addEventListener("click", () => {
     if (state.idx > 0) state.idx--;
     else { state.phase = "vibes"; state.idx = VIBES_QUESTIONS.length - 1; }
-    render();
+    render(true);
   });
 }
 
@@ -214,7 +228,7 @@ function renderResults(el) {
   if (SCRIPT_URL && $("sendBtn")) $("sendBtn").addEventListener("click", () => submitResults(results));
   $("retakeBtn").addEventListener("click", () => {
     Object.assign(state, { phase: "intro", idx: 0, name: "", vibes: {}, scent: {} });
-    render();
+    render(true);
   });
 }
 
