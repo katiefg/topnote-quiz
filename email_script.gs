@@ -3,7 +3,7 @@
 // When you're done testing, swap in your colleague's email.
 
 const CONFIG = {
-  OWNER_EMAIL: "you@example.com",  // ← change this to your email
+  OWNER_EMAIL: "youremail@gmail.com",  // ← change this to your email
   OWNER_NAME: "Scent Consultant",
   QUIZ_NAME: "Signature Scent Discovery Quiz",
 };
@@ -83,7 +83,7 @@ function buildEmailHtml(name, vibes, results) {
   var SERIF   = "'Cormorant', Georgia, 'Times New Roman', serif";
   var SANS    = "'Syne', 'Helvetica Neue', Arial, sans-serif";
 
-  var top3 = results.slice(0, 3).map(function(r) { return r.name; }).join(" · ");
+  var top3 = results.slice().sort(function(a, b) { return b.score - a.score; }).slice(0, 3).map(function(r) { return r.name; }).join(" · ");
 
   var vibesRows = [
     { id: "v1", q: "Looking for a scent for…" },
@@ -119,7 +119,7 @@ function buildEmailHtml(name, vibes, results) {
         </table>\
       </td>\
       <td style="padding:7px 0 7px 14px;font-family:' + SANS + ';font-size:9px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:' + INK_MID + ';width:90px;vertical-align:middle;white-space:nowrap;" class="ink-mid">\
-        ' + scoreStr + ' &middot; ' + r.label + '\
+        ' + r.label + '\
       </td>\
     </tr>';
   }).join("");
@@ -165,7 +165,7 @@ function buildEmailHtml(name, vibes, results) {
     <h1 style="margin:0;font-family:' + SERIF + ';font-size:36px;font-weight:500;line-height:1.0;color:' + INK + ';">' + esc(name) + '’s<br>scent map.</h1>\
   </td></tr>\
   <tr><td style="padding-bottom:40px;">\
-    <p style="margin:0;font-family:' + SERIF + ';font-size:17px;font-weight:400;font-style:italic;color:' + INK_MID + ';line-height:1.55;" class="ink-mid">Your strongest affinities lean toward <em>' + esc(top3) + '</em>. Below, your coordinates across all twelve families.</p>\
+    <p style="margin:0;font-family:' + SERIF + ';font-size:17px;font-weight:400;font-style:italic;color:' + INK_MID + ';line-height:1.55;" class="ink-mid">Your strongest affinities lean toward <em>' + esc(top3) + '</em>. Below, your coordinates across twelve scent families show what notes you’re more or less likely to enjoy.</p>\
   </td></tr>\
 \
   <!-- Vibes Diagnostic -->\

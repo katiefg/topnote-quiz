@@ -329,14 +329,15 @@ h1 {
 }
 .question-text {
   font-family: var(--display);
-  font-size: clamp(22px, 4.4vw, 28px);
+  font-size: clamp(20px, 4vw, 25px);
   font-weight: 500;
   line-height: 1.18;
   letter-spacing: 0.005em;
   color: var(--ink);
   margin-bottom: 28px;
-  max-width: 18ch;
+  max-width: 32ch;
   text-wrap: balance;
+  word-wrap: break-word;
 }
 
 /* ── Option rows ─────────────────────────────────────────────── */
@@ -407,6 +408,13 @@ h1 {
 }
 .text-input::placeholder { color: var(--ink-dim); opacity: 0.6; font-style: italic; }
 .text-input:focus { border-bottom-color: var(--red-deep); }
+.email-note {
+  font-family: var(--body);
+  font-size: 15px;
+  font-style: italic;
+  color: var(--ink-dim);
+  margin-top: 10px;
+}
 
 /* ── Buttons ─────────────────────────────────────────────────── */
 .nav {

@@ -1,8 +1,8 @@
 /* Top Note Scent Quiz — render + interaction. Vanilla. */
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwqx7IzJUE1NGeVrycpxAaDq3N_3ePDOBAFzRUVkATORBntWkQ6eq7hOJokSX4djWbF/exec"; // ← paste your Apps Script web-app URL here to enable email delivery
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbze9EK2qMfYNoDX68P7gobR5a8CDyAFidqtJgEmMiw3iv95k6B23jLp2umRE33-7eei/exec"; // ← paste your Apps Script web-app URL here to enable email delivery
 
-const state = { phase: "intro", idx: 0, name: "", vibes: {}, scent: {} };
+const state = { phase: "intro", idx: 0, name: "", email: "", vibes: {}, scent: {}, emailSent: false };
 
 const $ = (id) => document.getElementById(id);
 const app = () => $("app");
@@ -14,6 +14,10 @@ function setFrame(left, center, right) {
   $("fLeft").textContent = left || "Top Note";
   $("fCenter").textContent = center || "";
   $("fRight").textContent = right || "";
+}
+
+function introReady() {
+  return state.name.trim() && state.email.trim() && state.email.includes("@");
 }
 
 function render(soft) {
@@ -55,17 +59,22 @@ function renderIntro(el) {
     <div class="divider"></div>
     <label class="field-label" for="nameInput">Your name</label>
     <input class="text-input" type="text" placeholder="Enter your name" id="nameInput" value="${esc(state.name)}">
+    <label class="field-label" for="emailInput" style="margin-top:16px;">Your email</label>
+    <input class="text-input" type="email" placeholder="your@email.com" id="emailInput" value="${esc(state.email)}">
+    <p class="email-note">We'll send your scent profile results here.</p>
     <div class="nav">
       <span></span>
-      <button class="btn-primary" id="startBtn" ${state.name.trim() ? "" : "disabled"}>Begin</button>
+      <button class="btn-primary" id="startBtn" ${introReady() ? "" : "disabled"}>Begin</button>
     </div>
   `;
-  $("nameInput").addEventListener("input", e => {
-    state.name = e.target.value;
-    $("startBtn").disabled = !state.name.trim();
+  const updateStart = () => { $("startBtn").disabled = !introReady(); };
+  $("nameInput").addEventListener("input", e => { state.name = e.target.value; updateStart(); });
+  $("emailInput").addEventListener("input", e => { state.email = e.target.value; updateStart(); });
+  $("emailInput").addEventListener("keydown", e => {
+    if (e.key === "Enter" && introReady()) $("startBtn").click();
   });
   $("nameInput").addEventListener("keydown", e => {
-    if (e.key === "Enter" && state.name.trim()) $("startBtn").click();
+    if (e.key === "Enter" && introReady()) $("startBtn").click();
   });
   $("startBtn").addEventListener("click", () => { state.phase = "vibes"; state.idx = 0; render(true); });
 }
@@ -121,10 +130,14 @@ function renderInterstitial(el) {
         src="assets/scent-profile-2.jpg" placeholder="Drop an image"></image-slot>
       <div class="section-num">Part II</div>
       <h2>The Scent<br>Profile</h2>
-      <p>Tell us how much you enjoy each of these fifty scents.</p>
+      <p>Tell us how much you enjoy each of these fifty scents. There may be scents that you love in the wild, but might not want to smell like — in that case, err on the side of dislike.</p>
       <button class="btn-primary" id="continueBtn">Continue</button>
+      <div style="margin-top:20px;">
+        <button class="btn-back" id="backBtn">&larr; Back</button>
+      </div>
     </div>
   `;
+  $("backBtn").addEventListener("click", () => { state.phase = "vibes"; state.idx = VIBES_QUESTIONS.length - 1; render(true); });
   $("continueBtn").addEventListener("click", () => { state.phase = "scent"; state.idx = 0; render(true); });
 }
 
@@ -164,7 +177,7 @@ function renderScent(el) {
 function renderResults(el) {
   setFrame("Top Note", "Signature Profile", esc(state.name || ""));
   $("fCenter").style.color = "var(--red-deep)";
-  const results = calcResults(state.scent).sort((a, b) => b.score - a.score);
+  const results = calcResults(state.scent);
 
   const vibesHtml = VIBES_QUESTIONS.map(q =>
     `<div class="vibes-row"><span class="q">${esc(q.text)}</span> <span class="a">${esc(state.vibes[q.id] || "\u2014")}</span></div>`
@@ -184,19 +197,14 @@ function renderResults(el) {
         ${line}
         <div class="slider-dot" style="left:${dot}%;background:${lerpColor(dot)}"></div>
       </div>
-      <div class="score-label">${scoreStr} · ${r.label}</div>
+      <div class="score-label">${r.label}</div>
     </div>`;
   }).join("");
 
-  const top3 = results.slice(0, 3).map(r => r.name).join(" · ");
+  const top3 = [...results].sort((a, b) => b.score - a.score).slice(0, 3).map(r => r.name).join(" · ");
 
   const emailSection = SCRIPT_URL
-    ? `<div class="email-box">
-         <label class="field-label" for="emailInput">Email your results</label>
-         <input type="email" id="emailInput" placeholder="your@email.com">
-         <button class="btn-primary" id="sendBtn" style="width:100%">Send Results</button>
-         <div id="statusMsg"></div>
-       </div>`
+    ? `<div class="email-box"><div id="statusMsg" class="status-msg sending">Sending your results to ${esc(state.email)}…</div></div>`
     : `<div class="email-box"><p class="status-msg" style="color:var(--ink-dim)">A curator will follow up with hand-picked recommendations.</p></div>`;
 
   el.innerHTML = `
@@ -205,7 +213,7 @@ function renderResults(el) {
       <div class="cover-copy">
         <h1>${esc(state.name || "Your")}\u2019s<br>scent map.</h1>
         <p class="subtitle">Your strongest affinities lean toward <em>${esc(top3)}</em>. Below, your
-        coordinates across all twelve families.</p>
+        coordinates across twelve scent families show what notes you're more or less likely to enjoy.</p>
       </div>
     </div>
 
@@ -225,30 +233,24 @@ function renderResults(el) {
     </div>
   `;
 
-  if (SCRIPT_URL && $("sendBtn")) $("sendBtn").addEventListener("click", () => submitResults(results));
+  if (SCRIPT_URL) submitResults(results);
   $("retakeBtn").addEventListener("click", () => {
-    Object.assign(state, { phase: "intro", idx: 0, name: "", vibes: {}, scent: {} });
+    Object.assign(state, { phase: "intro", idx: 0, name: "", email: "", vibes: {}, scent: {}, emailSent: false });
     render(true);
   });
 }
 
 async function submitResults(results) {
-  const email = $("emailInput").value.trim();
-  const sendBtn = $("sendBtn"), statusMsg = $("statusMsg");
-  if (!email || !email.includes("@")) {
-    statusMsg.className = "status-msg error";
-    statusMsg.textContent = "Please enter a valid email address.";
-    return;
-  }
-  sendBtn.disabled = true; sendBtn.textContent = "Sending\u2026";
-  statusMsg.className = "status-msg sending"; statusMsg.textContent = "Sending your results\u2026";
+  if (state.emailSent) return;
+  state.emailSent = true;
+  const statusMsg = $("statusMsg");
+  if (!statusMsg) return;
   try {
     await fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify({ name: state.name, email, vibes: state.vibes, results }) });
+      body: JSON.stringify({ name: state.name, email: state.email, vibes: state.vibes, results }) });
   } catch (e) { /* no-cors: opaque, assume ok */ }
   statusMsg.className = "status-msg success";
-  statusMsg.textContent = "Results sent \u2014 check your inbox.";
-  sendBtn.textContent = "Sent";
+  statusMsg.textContent = "Results sent to " + state.email + " \u2014 check your inbox.";
 }
 
 render();
