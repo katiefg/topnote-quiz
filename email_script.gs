@@ -13,7 +13,7 @@ const CONFIG = {
 function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
-    const { name, email, vibes, results } = data;
+    const { name, email, vibes, results, leather, impressions, chemistry } = data;
 
     if (!name || !email || !results) {
       return jsonResponse({ success: false, error: "Missing required fields" });
@@ -23,6 +23,7 @@ function doPost(e) {
     const subjectForOwner = `New Quiz Result: ${name} — ${CONFIG.QUIZ_NAME}`;
 
     const htmlBody = buildEmailHtml(name, vibes, results);
+    const ownerHtml = htmlBody + buildConsultantNotes(leather, results, impressions, chemistry);
 
     // Send to quiz taker
     GmailApp.sendEmail(email, subjectForTaker, "", {
@@ -30,9 +31,9 @@ function doPost(e) {
       name: CONFIG.OWNER_NAME,
     });
 
-    // Send copy to owner
+    // Send copy to owner with consultant notes
     GmailApp.sendEmail(CONFIG.OWNER_EMAIL, subjectForOwner, "", {
-      htmlBody: htmlBody,
+      htmlBody: ownerHtml,
       name: CONFIG.QUIZ_NAME,
       replyTo: email,
     });
@@ -165,7 +166,7 @@ function buildEmailHtml(name, vibes, results) {
     <h1 style="margin:0;font-family:' + SERIF + ';font-size:36px;font-weight:500;line-height:1.0;color:' + INK + ';">' + esc(name) + '’s<br>scent map.</h1>\
   </td></tr>\
   <tr><td style="padding-bottom:40px;">\
-    <p style="margin:0;font-family:' + SERIF + ';font-size:17px;font-weight:400;font-style:italic;color:' + INK_MID + ';line-height:1.55;" class="ink-mid">Your strongest affinities lean toward <em>' + esc(top3) + '</em>. Below, your coordinates across twelve scent families show what notes you’re more or less likely to enjoy.</p>\
+    <p style="margin:0;font-family:' + SERIF + ';font-size:17px;font-weight:400;font-style:italic;color:' + INK_MID + ';line-height:1.55;" class="ink-mid">Your strongest affinities lean toward <em>' + esc(top3) + '</em>. Below, your coordinates across thirteen scent families show what notes you’re more or less likely to enjoy.</p>\
   </td></tr>\
 \
   <!-- Vibes Diagnostic -->\
@@ -212,7 +213,7 @@ function buildEmailHtml(name, vibes, results) {
   <tr><td style="padding-top:68px;">\
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation">\
       <tr>\
-        <td style="font-family:' + SANS + ';font-size:9px;font-weight:500;letter-spacing:0.3em;text-transform:uppercase;color:' + INK_DIM + ';" class="ink-dim">A Signature Scent Diagnostic</td>\
+        <td style="font-family:' + SANS + ';font-size:9px;font-weight:500;letter-spacing:0.3em;text-transform:uppercase;color:' + INK_DIM + ';" class="ink-dim">Your Fragrance Profile Diagnostic</td>\
         <td style="text-align:right;font-family:' + SANS + ';font-size:9px;font-weight:500;letter-spacing:0.3em;text-transform:uppercase;color:' + INK_DIM + ';" class="ink-dim">Top Note</td>\
       </tr>\
     </table>\
@@ -223,6 +224,166 @@ function buildEmailHtml(name, vibes, results) {
 </table>\
 </body>\
 </html>';
+}
+
+function buildConsultantNotes(leather, results, impressions, chemistry) {
+  var PAPER   = "#e7e0d0";
+  var INK     = "#221e18";
+  var INK_MID = "#6a6053";
+  var INK_DIM = "#9a8f7d";
+  var RULE    = "#d2c8b2";
+  var SERIF   = "'Cormorant', Georgia, 'Times New Roman', serif";
+  var SANS    = "'Syne', 'Helvetica Neue', Arial, sans-serif";
+
+  var interpretation = 'No leather response recorded';
+  if (leather === 'I don’t enjoy leather at all') {
+    interpretation = 'Strong negative — Musk direction. Rules out Magnetic profile.';
+  } else if (leather === 'Soft and powdery suede') {
+    interpretation = 'Leans musk — clean and minimalist lean.';
+  } else if (leather === 'Classic clean leather') {
+    interpretation = 'Balanced — no strong directional signal.';
+  } else if (leather === 'Rich, smoky tanned leather') {
+    interpretation = 'Leans feral — Magnetic or Smoky/Leathery lean.';
+  } else if (leather === 'Intensely animalic raw hide') {
+    interpretation = 'Strong feral — confirms Magnetic profile.';
+  }
+
+  var ranked = results.slice().sort(function(a, b) { return b.score - a.score; });
+  var tableRows = ranked.map(function(r, i) {
+    return '\
+      <tr>\
+        <td style="padding:5px 10px;font-family:' + SANS + ';font-size:13px;color:' + INK + ';border-bottom:1px solid ' + RULE + ';text-align:center;">' + (i + 1) + '</td>\
+        <td style="padding:5px 10px;font-family:' + SERIF + ';font-size:14px;color:' + INK + ';border-bottom:1px solid ' + RULE + ';">' + esc(r.name) + '</td>\
+        <td style="padding:5px 10px;font-family:' + SANS + ';font-size:13px;color:' + INK + ';border-bottom:1px solid ' + RULE + ';text-align:center;">' + r.score.toFixed(2) + '</td>\
+        <td style="padding:5px 10px;font-family:' + SANS + ';font-size:13px;color:' + INK + ';border-bottom:1px solid ' + RULE + ';text-align:center;">' + r.pct + '%</td>\
+        <td style="padding:5px 10px;font-family:' + SANS + ';font-size:13px;color:' + INK_MID + ';border-bottom:1px solid ' + RULE + ';">' + esc(r.label) + '</td>\
+      </tr>';
+  }).join('');
+
+  var gap = ranked.length >= 2 ? (ranked[0].score - ranked[1].score) : 0;
+  var gapText = 'Gap #1 vs #2: ' + gap.toFixed(2) + ' — ' + (gap > 0.5 ? 'Clear dominant signal' : 'Blended profile — review top 3');
+
+  var impressionRows = '';
+  if (impressions && impressions.length) {
+    impressionRows = impressions.map(function(a) {
+      return '\
+        <tr>\
+          <td style="padding:5px 10px;font-family:' + SERIF + ';font-size:14px;color:' + INK + ';border-bottom:1px solid ' + RULE + ';">' + esc(a.axis) + '</td>\
+          <td style="padding:5px 10px;font-family:' + SANS + ';font-size:13px;color:' + INK + ';border-bottom:1px solid ' + RULE + ';text-align:center;">' + a.score.toFixed(2) + '</td>\
+          <td style="padding:5px 10px;font-family:' + SANS + ';font-size:12px;color:' + INK_MID + ';border-bottom:1px solid ' + RULE + ';">' + esc(a.neg) + '</td>\
+          <td style="padding:5px 10px;font-family:' + SANS + ';font-size:12px;color:' + INK_MID + ';border-bottom:1px solid ' + RULE + ';">' + esc(a.pos) + '</td>\
+        </tr>';
+    }).join('');
+  }
+
+  return '\
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:' + PAPER + ';">\
+<tr><td align="center" style="padding:0 20px 48px;">\
+<table width="560" cellpadding="0" cellspacing="0" role="presentation" style="max-width:560px;width:100%;">\
+  <tr><td style="border-top:2px solid ' + RULE + ';padding-top:28px;">\
+    <div style="font-family:' + SANS + ';font-size:10px;font-weight:600;letter-spacing:0.3em;text-transform:uppercase;color:' + INK_DIM + ';margin-bottom:16px;">Consultant Notes</div>\
+  </td></tr>\
+\
+  <tr><td style="padding-bottom:20px;">\
+    <div style="font-family:' + SERIF + ';font-size:15px;font-weight:500;color:' + INK + ';margin-bottom:4px;">Leather / Feral–Musk Spectrum</div>\
+    <div style="font-family:' + SERIF + ';font-size:15px;font-style:italic;color:' + INK_MID + ';">Response: ' + esc(leather || '—') + '</div>\
+    <div style="font-family:' + SERIF + ';font-size:15px;color:' + INK + ';margin-top:8px;">' + interpretation + '</div>\
+  </td></tr>\
+\
+  <tr><td style="padding-bottom:20px;">\
+    <div style="font-family:' + SANS + ';font-size:10px;font-weight:600;letter-spacing:0.3em;text-transform:uppercase;color:' + INK_DIM + ';margin-bottom:12px;">Category Rankings</div>\
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;">\
+      <tr style="background:' + RULE + ';">\
+        <th style="padding:6px 10px;font-family:' + SANS + ';font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:' + INK + ';text-align:center;">Rank</th>\
+        <th style="padding:6px 10px;font-family:' + SANS + ';font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:' + INK + ';text-align:left;">Category</th>\
+        <th style="padding:6px 10px;font-family:' + SANS + ';font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:' + INK + ';text-align:center;">Score</th>\
+        <th style="padding:6px 10px;font-family:' + SANS + ';font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:' + INK + ';text-align:center;">Strength</th>\
+        <th style="padding:6px 10px;font-family:' + SANS + ';font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:' + INK + ';text-align:left;">Label</th>\
+      </tr>\
+      ' + tableRows + '\
+    </table>\
+  </td></tr>\
+\
+  <tr><td style="padding-bottom:20px;">\
+    <div style="font-family:' + SERIF + ';font-size:15px;font-weight:500;color:' + INK + ';">' + gapText + '</div>\
+  </td></tr>\
+\
+  <tr><td style="padding-bottom:12px;">\
+    <div style="font-family:' + SANS + ';font-size:10px;font-weight:600;letter-spacing:0.3em;text-transform:uppercase;color:' + INK_DIM + ';margin-bottom:12px;">Impressions — Vibe Axes</div>\
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;">\
+      <tr style="background:' + RULE + ';">\
+        <th style="padding:6px 10px;font-family:' + SANS + ';font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:' + INK + ';text-align:left;">Axis</th>\
+        <th style="padding:6px 10px;font-family:' + SANS + ';font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:' + INK + ';text-align:center;">Score</th>\
+        <th style="padding:6px 10px;font-family:' + SANS + ';font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:' + INK + ';text-align:left;">− Pole</th>\
+        <th style="padding:6px 10px;font-family:' + SANS + ';font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:' + INK + ';text-align:left;">+ Pole</th>\
+      </tr>\
+      ' + impressionRows + '\
+    </table>\
+  </td></tr>\
+\
+  <tr><td style="padding-top:8px;padding-bottom:12px;">\
+    <div style="font-family:' + SANS + ';font-size:10px;font-weight:600;letter-spacing:0.3em;text-transform:uppercase;color:' + INK_DIM + ';margin-bottom:12px;">Chemistry — Skin Profile</div>\
+    ' + buildChemistryRows(chemistry, SERIF, SANS, INK, INK_MID, RULE) + '\
+  </td></tr>\
+</table>\
+</td></tr>\
+</table>';
+}
+
+function buildChemistryRows(chemistry, SERIF, SANS, INK, INK_MID, RULE) {
+  if (!chemistry) return '';
+  var questions = [
+    { id:'c1', label:'Longevity' },
+    { id:'c2', label:'Skin Type' },
+    { id:'c3', label:'Citrus Behavior' },
+    { id:'c4', label:'Sweetness Amplification' },
+    { id:'c5', label:'Sensitivities' },
+  ];
+  var insights = {
+    c1: function(ans) {
+      var opts = ['They fade within an hour or two','They last a little less than I’d expect','They last about as long as advertised','They last a bit longer than expected','They last all day or longer'];
+      var idx = opts.indexOf(ans);
+      if (idx <= 1) return 'Alkaline skin likely. Recommend moisturizer on damp skin before application, emphasize strong base notes, higher concentrations.';
+      if (idx >= 3) return 'Likely acidic/oily skin — ideal for perfume. Light scents work well.';
+      return 'Neutral longevity — no specific adjustment needed.';
+    },
+    c2: function(ans) {
+      var opts = ['Very dry — often feels tight, rarely gets shiny','Somewhat dry — occasionally needs moisture','Balanced — neither oily nor dry','Somewhat oily — gets a little shiny by midday','Very oily — noticeably shiny within a few hours'];
+      var idx = opts.indexOf(ans);
+      if (idx <= 1) return 'Dry skin: avoid citrus-led, recommend higher concentrations. Lean toward resins, woods, spices, vanilla.';
+      if (idx >= 3) return 'Oily skin: fresh, citrus, aquatic, woody fragrances work well.';
+      return 'Balanced skin — no specific adjustment needed.';
+    },
+    c3: function(ans) {
+      var opts = ['Much sharper or more aggressive than I’d expect','Slightly sharper than on the strip or bottle','About the same as on the strip or bottle','Slightly softer or more muted on me','I haven’t worn citrus scents'];
+      var idx = opts.indexOf(ans);
+      if (idx <= 1) return 'Skin may be alkaline. Recommend hydrating before application, steer away from citrus-led fragrances, lean toward bergamot over lemon/lime.';
+      if (idx === 4) return 'No citrus experience to reference.';
+      if (idx === 3) return 'Citrus is softened on skin — may need brighter citrus formulations.';
+      return 'Citrus behaves normally on skin.';
+    },
+    c4: function(ans) {
+      var opts = ['Always — everything smells much sweeter on me','Often — I notice this regularly','Sometimes — it depends on the fragrance','Rarely — scents smell close to how I expect','Never — scents smell the same or drier on me'];
+      var idx = opts.indexOf(ans);
+      if (idx <= 1) return 'Sweetness amplification detected. Recommend moisturizing and hydrating before application. Consider applying on clothes or hair rather than skin. Avoid gourmand-on-skin combinations.';
+      if (idx >= 3) return 'No sweetness amplification — gourmand and sweet notes perform as expected.';
+      return 'Occasional sweetness amplification — monitor with specific fragrances.';
+    },
+    c5: function(ans) {
+      if (!ans || !ans.trim()) return 'No sensitivities reported.';
+      return 'Flag for review before session. Common watch items: synthetic musks (Iso E Super), oakmoss/IFRA-restricted materials, high-pitched florals triggering headaches.';
+    },
+  };
+  return questions.map(function(q) {
+    var answer = chemistry[q.id] || '—';
+    var insight = insights[q.id] ? insights[q.id](answer) : '';
+    return '\
+    <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid ' + RULE + ';">\
+      <div style="font-family:' + SANS + ';font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:' + INK + ';margin-bottom:4px;">' + esc(q.label) + '</div>\
+      <div style="font-family:' + SERIF + ';font-size:15px;font-style:italic;color:' + INK_MID + ';margin-bottom:6px;">Response: ' + esc(answer) + '</div>\
+      <div style="font-family:' + SERIF + ';font-size:14px;color:' + INK + ';">' + esc(insight) + '</div>\
+    </div>';
+  }).join('');
 }
 
 function esc(s) {
