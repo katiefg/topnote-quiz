@@ -321,13 +321,66 @@ function buildConsultantNotes(leather, results, impressions, chemistry) {
     </table>\
   </td></tr>\
 \
-  <tr><td style="padding-top:8px;padding-bottom:12px;">\
+  <tr><td style="padding-top:8px;padding-bottom:20px;">\
+    ' + buildProfileMatch(impressions, SERIF, SANS, INK, INK_MID, INK_DIM, RULE) + '\
+  </td></tr>\
+\
+  <tr><td style="padding-bottom:12px;">\
     <div style="font-family:' + SANS + ';font-size:10px;font-weight:600;letter-spacing:0.3em;text-transform:uppercase;color:' + INK_DIM + ';margin-bottom:12px;">Chemistry — Skin Profile</div>\
     ' + buildChemistryRows(chemistry, SERIF, SANS, INK, INK_MID, RULE) + '\
   </td></tr>\
 </table>\
 </td></tr>\
 </table>';
+}
+
+function buildProfileMatch(impressions, SERIF, SANS, INK, INK_MID, INK_DIM, RULE) {
+  if (!impressions || !impressions.length) return '';
+
+  var PROFILES = [
+    { name:'Clean and minimalist', L:[0,2], S:[0,2], P:[-2,0], T:[0,2], notes:'ANIMALIC / Musk · ATMOSPHERIC · WOODY dry' },
+    { name:'Bright and cheerful', L:[1,2], S:[-1,1], P:[0,2], T:[0,2], notes:'CITRUS · FRUITY · FLORAL fruity-floral' },
+    { name:'Aromatic and fresh', L:[0,2], S:[-2,0], P:[-1,1], T:[-1,1], notes:'GREEN camphoraceous · GREEN herbal · ATMOSPHERIC' },
+    { name:'Romantic and soft', L:[-1,0], S:[-2,0], P:[-2,-1], T:[-2,0], notes:'FLORAL rose + powdery · ANIMALIC musk' },
+    { name:'Soft and ambery', L:[-1,0], S:[-2,-1], P:[-2,-1], T:[-2,-1], notes:'RESINOUS amber · FLORAL powdery · ANIMALIC musk' },
+    { name:'Magnetic', L:[-1,1], S:[0,2], P:[1,2], T:[0,2], notes:'ANIMALIC feral + leather · FLORAL indolic · SPICY' },
+    { name:'Smoky and leathery', L:[-2,-1], S:[-1,1], P:[0,1], T:[-2,-1], notes:'SMOKY · ANIMALIC leather · AGRESTIC · WOODY smoky' },
+    { name:'Opulent and resinous', L:[-2,-1], S:[-1,1], P:[1,2], T:[-2,-1], notes:'RESINOUS incense + amber · SPICY · EARTHY' },
+    { name:'Warm and edible', L:[0,1], S:[-2,-1], P:[-2,-1], T:[-2,-1], notes:'GOURMAND sweet + roasted · RESINOUS amber' },
+    { name:'Nature — earthy and woodsy', L:[-1,0], S:[-2,-1], P:[-1,0], T:[-2,-1], notes:'EARTHY · WOODY · AGRESTIC · GREEN sharp' },
+    { name:'Nature — sea and sky', L:[0,2], S:[-1,1], P:[0,1], T:[0,2], notes:'ATMOSPHERIC marine + ozonic · GREEN · CITRUS' },
+  ];
+
+  var client = {};
+  impressions.forEach(function(a) { client[a.code] = a.score; });
+
+  var distances = PROFILES.map(function(p) {
+    var midL = (p.L[0] + p.L[1]) / 2;
+    var midS = (p.S[0] + p.S[1]) / 2;
+    var midP = (p.P[0] + p.P[1]) / 2;
+    var midT = (p.T[0] + p.T[1]) / 2;
+    var d = Math.abs(client.L - midL) + Math.abs(client.S - midS) + Math.abs(client.P - midP) + Math.abs(client.T - midT);
+    return { name: p.name, notes: p.notes, distance: Math.round(d * 100) / 100 };
+  });
+
+  distances.sort(function(a, b) { return a.distance - b.distance; });
+  var primary = distances[0];
+  var secondary = distances[1];
+
+  return '\
+    <div style="font-family:' + SANS + ';font-size:10px;font-weight:600;letter-spacing:0.3em;text-transform:uppercase;color:' + INK_DIM + ';margin-bottom:12px;">Impressions — Profile Match</div>\
+    <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid ' + RULE + ';">\
+      <div style="font-family:' + SANS + ';font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:' + INK + ';margin-bottom:4px;">Primary Profile</div>\
+      <div style="font-family:' + SERIF + ';font-size:18px;font-weight:500;color:' + INK + ';">' + esc(primary.name) + '</div>\
+      <div style="font-family:' + SERIF + ';font-size:14px;font-style:italic;color:' + INK_MID + ';margin-top:4px;">' + esc(primary.notes) + '</div>\
+      <div style="font-family:' + SANS + ';font-size:11px;color:' + INK_MID + ';margin-top:4px;">Distance: ' + primary.distance.toFixed(2) + '</div>\
+    </div>\
+    <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid ' + RULE + ';">\
+      <div style="font-family:' + SANS + ';font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:' + INK + ';margin-bottom:4px;">Secondary Profile</div>\
+      <div style="font-family:' + SERIF + ';font-size:18px;font-weight:500;color:' + INK + ';">' + esc(secondary.name) + '</div>\
+      <div style="font-family:' + SERIF + ';font-size:14px;font-style:italic;color:' + INK_MID + ';margin-top:4px;">' + esc(secondary.notes) + '</div>\
+      <div style="font-family:' + SANS + ';font-size:11px;color:' + INK_MID + ';margin-top:4px;">Distance: ' + secondary.distance.toFixed(2) + '</div>\
+    </div>';
 }
 
 function buildChemistryRows(chemistry, SERIF, SANS, INK, INK_MID, RULE) {
