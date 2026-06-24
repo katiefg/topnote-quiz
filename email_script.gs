@@ -4,8 +4,8 @@
 
 const CONFIG = {
   OWNER_EMAIL: "youremail@gmail.com",  // ← change this to your email
-  OWNER_NAME: "Scent Consultant",
-  QUIZ_NAME: "Signature Scent Discovery Quiz",
+  OWNER_NAME: "Signature Profile",
+  QUIZ_NAME: "Signature Profile",
 };
 
 // ─── WEB APP ENTRY POINT ────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 /* Top Note Scent Quiz — render + interaction. Vanilla. */
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyZs1flooO2ltcB0SrND3w0ccWfV5D43VbVQHlWjWX4jRl1i3_caEqc3y-PZmU0u8u_/exec"; // ← paste your Apps Script web-app URL here to enable email delivery
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCL2u0BRiMfk3V0CmySScHl8_WPMwcyz7zHyHqxXduS1tThgtDpjNz3E5cZS9AnDHbkw/exec"; // ← paste your Apps Script web-app URL here to enable email delivery
 
 const state = { phase: "intro", idx: 0, name: "", email: "", vibes: {}, scent: {}, impressions: {}, chemistry: {}, emailSent: false };
 
@@ -113,7 +113,7 @@ function renderIntro(el) {
     <div class="cover">
       <div class="cover-bloom" aria-hidden="true"></div>
       <div class="cover-copy">
-        <p class="eyebrow">The Signature Scent Diagnostic</p>
+        <p class="eyebrow">Your Fragrance Profile Diagnostic</p>
         <h1>Find your<br>signature.</h1>
       </div>
     </div>

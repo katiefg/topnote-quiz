@@ -60,7 +60,7 @@ const SCENT_QUESTIONS = [
   { id:"s40", text:"Do you enjoy the smell of dry, sun-baked earth or warm stone?", cat:{ resinous:0.5, earthy:0.3, woody:0.2 } },
   { id:"s41", text:"Do you enjoy the light, vegetal, and slightly toasty smell of green tea or oolong tea?", cat:{ green:0.5, gourmand:0.3, woody:0.2 } },
   { id:"s42", text:"Do you like the smell of fresh clean laundry or freshly washed skin?", cat:{ animalic:1 } },
-  { id:"s43", text:"Do you enjoy the smell of frankincense or myrrh?", cat:{ resinous:1 } },
+  { id:"s43", text:"Do you like the smell of burning candle wax?", cat:{ resinous:0.5, gourmand:0.3, smoky:0.2 } },
   { id:"s44", text:"Do you like intimate, human smells that aren\u2019t quite clean yet aren\u2019t unpleasant, such as warm skin after exercise?", cat:{ animalic:0.6, agrestic:0.4 } },
   { id:"s45", text:"Do you enjoy the smell of soft animal fur?", cat:{ animalic:1 } },
   { id:"s46", text:"How do you prefer the smell of leather?", cat:{ animalic:1 }, spectrum:[
@@ -70,7 +70,7 @@ const SCENT_QUESTIONS = [
     { label:"Rich, smoky tanned leather", value:1 },
     { label:"Intensely animalic raw hide", value:2 }
   ]},
-  { id:"s47", text:"Do you enjoy the earthy damp smell in the air after rainfall?", cat:{ atmospheric:0.5, earthy:0.3, green:0.2 } },
+  { id:"s47", text:"Do you enjoy the earthy damp smell in the air after rainfall, also known as petrichor?", cat:{ atmospheric:0.5, earthy:0.3, green:0.2 } },
   { id:"s48", text:"Do you enjoy the salty smell of the ocean?", cat:{ atmospheric:1 } },
   { id:"s49", text:"Do you like the smell of cold, clean icy mountain air?", cat:{ atmospheric:0.7, green:0.3 } },
   { id:"s50", text:"Do you enjoy the smell of sunscreen?", cat:{ atmospheric:0.4, floral:0.3, citrus:0.3 } },
@@ -94,7 +94,7 @@ const CATEGORIES = [
 
 const TOTAL_WEIGHTS = {
   citrus:3.1, floral:5, green:6.43, fruity:4.04, spicy:1.5,
-  resinous:3.5, gourmand:6.93, smoky:0.9, agrestic:3.2,
+  resinous:3.0, gourmand:7.23, smoky:1.1, agrestic:3.2,
   earthy:2.4, woody:3.8, animalic:5.8, atmospheric:3.4
 };
 
@@ -205,7 +205,7 @@ const IMPRESSION_QUESTIONS = [
     { img:"assets/impressions-images/4.4.webp", L:-1, S:0, P:2, T:-1 },
     { img:"assets/impressions-images/4.5.jpg", L:2, S:1, P:1, T:1 },
   ]},
-  { id:"i5", text:"Which environment would you prefer on a Sunday afternoon?", options:[
+  { id:"i5", text:"Which environment would you prefer to visit on your weekends?", options:[
     { img:"assets/impressions-images/5.1.jpg", L:0, S:-2, P:-1, T:-2 },
     { img:"assets/impressions-images/5.2.jpg", L:1, S:0, P:0, T:1 },
     { img:"assets/impressions-images/5.3.avif", L:-2, S:-1, P:0, T:-2 },
