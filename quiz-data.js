@@ -100,7 +100,7 @@ const TOTAL_WEIGHTS = {
 
 const BOOST_VALUES = {
   citrus:1.1, floral:1.1, green:1.1, fruity:1.1, spicy:1,
-  resinous:1, gourmand:1, smoky:0.7, agrestic:1.1, earthy:1,
+  resinous:1, gourmand:1, smoky:0.75, agrestic:1.1, earthy:1,
   woody:1, animalic:1, atmospheric:1.1
 };
 

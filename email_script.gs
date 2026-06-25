@@ -84,7 +84,7 @@ function buildEmailHtml(name, vibes, results) {
   var SERIF   = "'Cormorant', Georgia, 'Times New Roman', serif";
   var SANS    = "'Syne', 'Helvetica Neue', Arial, sans-serif";
 
-  var top3 = results.slice().sort(function(a, b) { return b.score - a.score; }).slice(0, 3).map(function(r) { return r.name; }).join(" · ");
+  var top3 = results.slice().filter(function(r) { return r.key !== "smoky"; }).sort(function(a, b) { return b.score - a.score; }).slice(0, 3).map(function(r) { return r.name; }).join(" · ");
 
   var vibesRows = [
     { id: "v1", q: "Looking for a scent for…" },

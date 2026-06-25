@@ -402,7 +402,7 @@ function renderResults(el) {
     </div>`;
   }).join("");
 
-  const top3 = [...results].sort((a, b) => b.score - a.score).slice(0, 3).map(r => r.name).join(" · ");
+  const top3 = [...results].filter(r => r.key !== "smoky").sort((a, b) => b.score - a.score).slice(0, 3).map(r => r.name).join(" · ");
 
   const emailSection = SCRIPT_URL
     ? `<div class="email-box"><div id="statusMsg" class="status-msg sending">Sending your results to ${esc(state.email)}…</div></div>`
