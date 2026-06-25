@@ -25,7 +25,6 @@ const SCENT_QUESTIONS = [
   { id:"s11", text:"Do you enjoy the smell of fresh savory herbs like basil or thyme?", cat:{ green:1 } },
   { id:"s12", text:"Do you like sharp, medicinal fresh scents like eucalyptus or mint?", cat:{ green:0.7, atmospheric:0.3 } },
   { id:"s13", text:"Do you enjoy the fresh, powdery, and calming smell of lavender?", cat:{ green:0.5, floral:0.3, agrestic:0.2 } },
-  { id:"s14", text:"Do you like the smell of green, sharp, and slightly bitter vegetables like kale or swiss chard?", cat:{ green:0.7, fruity:0.3 } },
   { id:"s15", text:"Do you like the smell of ripe peaches or nectarines?", cat:{ fruity:1 } },
   { id:"s16", text:"Do you like the smell of tropical fruits like pineapple, mango, or coconut?", cat:{ fruity:0.8, gourmand:0.2 } },
   { id:"s17", text:"Do you enjoy the smell of dark, tart berries like blackcurrant, blackberry, or raspberry?", cat:{ fruity:0.5, green:0.3, animalic:0.2 } },
@@ -43,7 +42,8 @@ const SCENT_QUESTIONS = [
   { id:"s23", text:"Do you like the golden, balsamic, slightly sweet, and enveloping smell of warm amber or tree resin?", cat:{ resinous:0.6, gourmand:0.2, animalic:0.2 } },
   { id:"s24", text:"Do you enjoy the smell of baking cake or cookies?", cat:{ gourmand:1 } },
   { id:"s25", text:"Do you like the smell of chocolate or cocoa powder?", cat:{ gourmand:1 } },
-  { id:"s26", text:"Do you enjoy the smell of freshly brewed coffee or roasted nuts like almonds and hazelnuts?", cat:{ gourmand:0.8, woody:0.2 } },
+  { id:"s26", text:"Do you enjoy the smell of freshly brewed coffee?", cat:{ gourmand:1 } },
+  { id:"s51", text:"Do you enjoy the smell of roasted nuts like almonds or hazelnuts?", cat:{ gourmand:0.8, woody:0.2 } },
   { id:"s27", text:"Do you like the smell of fresh cream or butter?", cat:{ gourmand:0.7, woody:0.3 } },
   { id:"s28", text:"Do you enjoy the smell of caramel or golden syrup?", cat:{ gourmand:1 } },
   { id:"s29", text:"Do you like the smell of whiskey or aged, barrel-aged spirits?", cat:{ gourmand:0.5, woody:0.3, spicy:0.2 } },
@@ -93,14 +93,14 @@ const CATEGORIES = [
 ];
 
 const TOTAL_WEIGHTS = {
-  citrus:3.1, floral:5, green:6.43, fruity:4.04, spicy:1.5,
-  resinous:3.0, gourmand:7.23, smoky:1.1, agrestic:3.2,
+  citrus:3.1, floral:5, green:5.73, fruity:3.74, spicy:1.5,
+  resinous:3.0, gourmand:8.23, smoky:1.1, agrestic:3.2,
   earthy:2.4, woody:3.8, animalic:5.8, atmospheric:3.4
 };
 
 const BOOST_VALUES = {
   citrus:1.1, floral:1.1, green:1.1, fruity:1.1, spicy:1,
-  resinous:1, gourmand:1, smoky:1, agrestic:1.1, earthy:1,
+  resinous:1, gourmand:1, smoky:0.7, agrestic:1.1, earthy:1,
   woody:1, animalic:1, atmospheric:1.1
 };
 
